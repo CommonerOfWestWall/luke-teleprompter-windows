@@ -1,0 +1,486 @@
+/* ============================================================
+   提词窗 / 监控窗
+   ============================================================ */
+
+/* 仅提词窗生效，避免污染控制台 */
+body.prompter {
+  background: #000;
+  cursor: none;
+}
+body.prompter.show-cursor {
+  cursor: default;
+}
+
+/* ── 提词舞台 ── */
+.vroot {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bgc, #000);
+}
+
+.vmirror {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform;
+}
+.vmirror.mh {
+  transform: scaleX(-1);
+}
+.vmirror.mv {
+  transform: scaleY(-1);
+}
+.vmirror.mh.mv {
+  transform: scale(-1, -1);
+}
+
+.vstage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.vtrack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  padding-bottom: 11em;
+  will-change: transform;
+  font-size: calc(var(--fs) * var(--k) * var(--osc));
+  line-height: var(--lh);
+  font-weight: var(--fw);
+  color: var(--fgc);
+  font-family: var(--ff);
+  text-align: var(--align);
+  padding-left: var(--px);
+  padding-right: var(--px);
+  letter-spacing: 0.01em;
+}
+
+.vtrack p {
+  margin: 0 0 var(--pg);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vtrack .h1 {
+  font-size: 1.24em;
+  font-weight: 800;
+  color: var(--tc);
+  margin-top: 0.55em;
+  letter-spacing: 0.02em;
+}
+.vtrack .h2 {
+  font-size: 1.12em;
+  font-weight: 700;
+  color: var(--tc);
+  margin-top: 0.45em;
+}
+.vtrack .h3 {
+  font-size: 1.02em;
+  font-weight: 700;
+  color: var(--tc);
+  margin-top: 0.35em;
+}
+.vtrack .cue {
+  font-size: 0.8em;
+  color: var(--cc);
+  font-weight: 500;
+  font-style: italic;
+  opacity: 0.95;
+  padding-left: 0.6em;
+  border-left: 0.12em solid currentColor;
+  text-align: left;
+  display: inline-block;
+}
+.vtrack .note {
+  font-size: 0.66em;
+  color: var(--nc);
+  font-weight: 400;
+  opacity: 0.75;
+}
+.vtrack .role {
+  font-weight: var(--role-weight, 500);
+}
+.vtrack .hl {
+  color: #ff5b5b;
+  font-style: normal;
+  font-weight: 700;
+}
+.vtrack .sep {
+  height: 1px;
+  background: currentColor;
+  opacity: 0.14;
+  margin: 0.75em 0;
+}
+
+/* 渐隐遮罩 */
+.veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16%;
+  pointer-events: none;
+  z-index: 3;
+}
+.veil.top {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--bgc, #000) 0%,
+    color-mix(in srgb, var(--bgc, #000) 55%, transparent) 45%,
+    transparent 100%
+  );
+}
+.veil.bottom {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    var(--bgc, #000) 0%,
+    color-mix(in srgb, var(--bgc, #000) 55%, transparent) 45%,
+    transparent 100%
+  );
+}
+
+/* 阅读线 / 安全框 */
+.vguide {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  display: none;
+}
+.vguide.on {
+  display: block;
+}
+.vguide .hline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 176, 32, 0.36);
+}
+.vguide .hline::before,
+.vguide .hline::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  width: 8px;
+  height: 9px;
+  border-left: 2px solid rgba(255, 176, 32, 0.7);
+  border-right: 2px solid rgba(255, 176, 32, 0.7);
+}
+.vguide .hline::before {
+  left: 12px;
+}
+.vguide .hline::after {
+  right: 12px;
+}
+.vguide .safe {
+  position: absolute;
+  inset: 5%;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+}
+
+/* ── 信息栏 ── */
+.info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+  padding: 0 calc(var(--px) * 0.8);
+  font-size: calc(var(--is) * var(--k) * var(--osc));
+  color: var(--ic);
+  font-family: var(--ff);
+  z-index: 5;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+.info.top {
+  top: 0;
+  height: calc(var(--is) * var(--k) * var(--osc) * 2.6);
+  align-items: center;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bgc) 78%, transparent),
+    transparent
+  );
+}
+.info.bottom {
+  bottom: 0;
+  height: calc(var(--is) * var(--k) * var(--osc) * 2.6);
+  align-items: center;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bgc) 78%, transparent),
+    transparent
+  );
+}
+.info .it {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  white-space: nowrap;
+}
+.info .it .k {
+  opacity: 0.55;
+  font-size: 0.78em;
+}
+.info .it .v {
+  font-weight: 600;
+}
+.info .rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.info .rec::before {
+  content: "";
+  width: 0.62em;
+  height: 0.62em;
+  border-radius: 50%;
+  background: #ff4d4f;
+  box-shadow: 0 0 0.5em #ff4d4f;
+  animation: blink 1.6s infinite;
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* 进度条 */
+.vprogress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  z-index: 6;
+  display: none;
+}
+.vprogress.on {
+  display: block;
+}
+.vprogress i {
+  display: block;
+  height: 100%;
+  background: var(--accent, #ffb020);
+  width: 0;
+  transition: width 0.1s linear;
+}
+
+/* 窗口化时的拖动把手 */
+.vdragbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+body.windowed .vdragbar {
+  display: flex;
+}
+.vdragbar .grip {
+  width: 54px;
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── 媒体投放 ── */
+.vmedia {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.vmedia.on {
+  display: flex;
+}
+.vmedia img,
+.vmedia video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.vmedia.fill img,
+.vmedia.fill video {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+.vslide {
+  position: absolute;
+  right: 1.4vw;
+  bottom: 1.2vh;
+  font: 600 1.1vw/1 var(--font);
+  color: rgba(255, 255, 255, 0.55);
+  z-index: 7;
+  display: none;
+}
+.vslide.on {
+  display: block;
+}
+
+/* ── 监控窗 ── */
+body.monitor {
+  background: #0a0c10;
+  cursor: default;
+}
+.mon-wrap {
+  display: grid;
+  grid-template-rows: 40px 1fr 30px 58px;
+  height: 100vh;
+  background: #0a0c10;
+}
+.mon-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, #171c24, #12161c);
+  border-bottom: 1px solid var(--line-soft);
+}
+.mon-top .live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ok);
+  letter-spacing: 0.5px;
+}
+.mon-top .live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 7px var(--ok);
+  animation: blink 1.8s infinite;
+}
+.mon-top .live.paused {
+  color: var(--text-3);
+}
+.mon-top .live.paused i {
+  background: #5b6478;
+  box-shadow: none;
+  animation: none;
+}
+.mon-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mon-stat b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.mon-view {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  margin: 8px;
+  border-radius: 8px;
+  border: 1px solid #232932;
+}
+.mon-view .preview-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  overflow: hidden;
+}
+.mon-view .lbl {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px 7px;
+  border-radius: 4px;
+  z-index: 9;
+  backdrop-filter: blur(4px);
+}
+
+.mon-map {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  align-items: center;
+  overflow: hidden;
+}
+.mon-map .seg {
+  flex: 1;
+  height: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: #232936;
+  cursor: pointer;
+  transition: background 0.15s, height 0.15s;
+}
+.mon-map .seg:hover {
+  background: #39414f;
+}
+.mon-map .seg:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.mon-map .seg.done {
+  background: #3a3320;
+}
+.mon-map .seg.cur {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 176, 32, 0.5);
+}
+
+.mon-keys {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+.mon-keys .big {
+  flex: 1;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mon-keys .k {
+  height: 46px;
+  min-width: 46px;
+}
+.mon-keys .kvsep {
+  width: 1px;
+  height: 26px;
+  background: var(--line);
+  flex: none;
+}

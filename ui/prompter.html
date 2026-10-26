@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>鲁科影视提词器 · 提词屏</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/viewer.css" />
+  <link rel="stylesheet" href="css/reading-guide.css" />
+</head>
+<body class="prompter">
+  <div id="root" class="vroot">
+    <div id="mirror" class="vmirror">
+      <div id="mediaLayer" class="vmedia"></div>
+      <div id="slideNo" class="vslide"></div>
+
+      <div id="stage" class="vstage"><div id="track" class="vtrack"></div></div>
+
+      <div class="veil top" id="veilTop"></div>
+      <div class="veil bottom" id="veilBottom"></div>
+
+      <div id="guide" class="vguide" aria-hidden="true"></div>
+
+      <div class="info top" id="infoTop"></div>
+      <div class="info bottom" id="infoBottom"></div>
+      <div id="progress" class="vprogress"><i id="progressBar"></i></div>
+    </div>
+
+    <div id="dragbar" class="vdragbar" data-tauri-drag-region><div class="grip"></div></div>
+  </div>
+
+  <div id="toast-host"></div>
+  <script src="js/core.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/reading-guide.js"></script>
+  <script src="js/prompter.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Rust/build output
+/src-tauri/target/
+/target/
+/dist/
+/release/
+/发布/
+
+# Local application state and private documents
+freeprompter.json
+last_script.txt
+*.log
+*.dmp
+
+# Credentials and local overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Development dependencies and generated test output
+node_modules/
+__pycache__/
+*.pyc
+playwright-report/
+test-results/
+
+# Editor/OS state
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>鲁科影视提词器</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/viewer.css" />
+  <link rel="stylesheet" href="css/reading-guide.css" />
+  <link rel="stylesheet" href="css/console.css" />
+</head>
+<body class="dark-scroll">
+  <div id="app">
+    <!-- 标题栏 -->
+    <div class="titlebar" data-tauri-drag-region>
+      <div class="brand"><span class="dot"></span>鲁科影视提词器</div>
+      <div class="file" id="fileName">未命名文稿<span class="dirty" id="dirtyMark"></span></div>
+      <div class="win-actions">
+        <button data-act="min" title="最小化">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+        </button>
+        <button data-act="max" title="最大化">
+          <svg class="ico" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="1.5" /></svg>
+        </button>
+        <button class="close" data-act="close" title="关闭">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 工具条 -->
+    <div class="toolbar">
+      <div class="tgroup">
+        <button class="btn" data-act="open" title="打开文稿 (Ctrl+O)">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 014.5 6h4l2 2.5h7A1.5 1.5 0 0119 10v7.5A1.5 1.5 0 0117.5 19h-13A1.5 1.5 0 013 17.5z"/></svg>
+          打开
+        </button>
+        <button class="btn" data-act="save" title="另存为 (Ctrl+S)">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/></svg>
+          另存
+        </button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="tgroup">
+        <button class="play-btn" id="btnPlay" title="播放 / 暂停 (空格)" aria-label="播放" aria-pressed="false">
+          <svg class="ico" viewBox="0 0 24 24" id="playIcon">
+            <path d="M8 4.6v14.8L20 12z" fill="currentColor" stroke="none"/>
+          </svg>
+          <span id="playLabel">播放</span>
+        </button>
+        <button class="btn" data-act="restart" title="回到开头 (Home)">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M19 12a7 7 0 11-2.05-4.95"/><path d="M19 4v4h-4"/></svg>
+          <span>回到开头</span>
+        </button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="tgroup" id="chipBar"></div>
+      <button class="btn" data-act="monitor" title="打开监控窗" aria-label="打开监控窗">
+        <svg class="ico" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+        <span>监控窗</span>
+      </button>
+      <button class="btn" data-act="settings" title="打开设置" aria-label="打开设置" aria-pressed="false">
+        <span>设置</span>
+      </button>
+      <button class="btn" data-act="screens" title="打开屏幕管理" aria-label="打开屏幕管理" aria-pressed="false">
+        <span>屏幕管理</span>
+      </button>
+      <button class="btn icon-only" data-act="addOut" title="新增提词屏" aria-label="新增提词屏">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <!-- 快调条：现场最常用的四个参数，常驻可见，不用翻面板 -->
+    <div class="quickbar" id="quickBar"></div>
+
+    <!-- 常驻输出概览：现场状态可读，投放与关闭动作分开 -->
+    <div class="output-overview" id="outputOverview" aria-label="输出概览"></div>
+
+    <!-- 主区 -->
+    <div class="main" id="main">
+      <!-- 文稿编辑 -->
+      <div class="pane editor-pane">
+        <div class="pane-head">
+          <span class="t">文稿</span>
+          <div class="tools">
+            <button class="btn sm ghost" data-ins="## " title="插入标题">H2</button>
+            <button class="btn sm ghost" data-ins="> " title="插入口播提示">提示</button>
+            <button class="btn sm ghost" data-wrap="**" title="标记重点">重点</button>
+            <button class="btn sm ghost" data-ins="---" title="插入分段">分段</button>
+          </div>
+        </div>
+        <div class="editor-wrap">
+          <div id="lineNumbers">1</div>
+            <textarea id="scriptInput" spellcheck="false" placeholder="打开 Word / TXT，或在左侧粘贴文稿"></textarea>
+        </div>
+      </div>
+
+      <!-- 预览 -->
+      <div class="pane preview-pane">
+        <div class="pane-head">
+          <span class="t">实时预览</span>
+          <div class="tools">
+            <select id="readingGuideMode" class="guide-select" aria-label="阅读提示" title="阅读提示；位置和三角强度可在设置的排版页调整">
+              <option value="off">提示：关闭</option>
+              <option value="triangle">提示：边缘三角</option>
+              <option value="invert">提示：当前行反色</option>
+            </select>
+            <button class="btn sm ghost" id="btnPreviewMirror" title="切换预览是否镜像" aria-label="切换预览是否镜像" aria-pressed="false">
+              <svg class="ico" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7L4 12l4 5z"/><path d="M16 7l4 5-4 5z"/></svg>
+            </button>
+            <button class="btn sm ghost" data-act="previewSeg" title="跳到上一段" aria-label="跳到上一段">
+              <svg class="ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+              <span>上一段</span>
+            </button>
+            <button class="btn sm ghost" data-act="nextSeg" title="跳到下一段" aria-label="跳到下一段">
+              <svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+              <span>下一段</span>
+            </button>
+          </div>
+        </div>
+        <div class="preview-body">
+          <div class="preview-stage" id="previewStage">
+            <div class="preview-empty" id="previewEmpty">打开 Word / TXT，或在左侧粘贴文稿</div>
+            <div class="preview-inner" id="previewInner">
+              <div class="vroot" id="pvRoot">
+                <div class="vmirror" id="pvMirror">
+                  <div class="vstage"><div class="vtrack" id="pvTrack"></div></div>
+                  <div class="veil top"></div>
+                  <div class="veil bottom"></div>
+                  <div class="vguide" id="pvGuide" aria-hidden="true"></div>
+                  <div class="info top" id="pvInfoTop"></div>
+                  <div class="info bottom" id="pvInfoBottom"></div>
+                  <div class="vprogress" id="pvProgress"><i id="pvProgressBar"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-footer" aria-label="现场播放进度">
+          <div class="preview-live"><span class="live-dot"></span><span id="previewPlayState">已暂停</span></div>
+          <div class="preview-stat">已用 <b id="stElapsed">00:00</b></div>
+          <div class="preview-stat">当前段 <b id="stCurrent">—</b></div>
+          <div class="preview-stat">剩余 <b id="stRemain">--:--</b></div>
+          <input id="previewProgressInput" type="range" min="0" max="100" step="0.1" value="0" aria-label="播放进度" disabled>
+        </div>
+      </div>
+
+      <!-- 参数 -->
+      <aside class="pane settings-pane" id="settingsPane" aria-label="设置面板" aria-hidden="true">
+        <div class="settings-head">
+          <strong id="settingsTitle">设置</strong>
+          <button class="btn sm icon-only ghost" data-act="closePanel" title="关闭设置" aria-label="关闭设置">×</button>
+        </div>
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="look">外观</button>
+          <button class="tab" data-tab="layout">排版</button>
+          <button class="tab" data-tab="info">信息栏</button>
+          <button class="tab" data-tab="roles">角色</button>
+          <button class="tab" data-tab="outputs">输出屏</button>
+          <button class="tab" data-tab="help">帮助</button>
+        </div>
+        <div class="tab-body" id="tabBody"></div>
+      </aside>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="statusbar">
+      <div class="it"><span class="dot" id="stDot"></span><b id="stMon">—</b> 台显示器</div>
+      <div class="it">字数 <b id="stChars">0</b></div>
+      <div class="it">段落 <b id="stSegs">0</b></div>
+      <div class="spacer"></div>
+      <div class="it" style="opacity:.5" id="stVer"></div>
+    </div>
+  </div>
+
+  <div id="toast-host"></div>
+  <script src="js/core.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/reading-guide.js"></script>
+  <script src="js/console.js"></script>
+</body>
+</html>

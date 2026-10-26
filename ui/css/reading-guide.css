@@ -1,0 +1,31 @@
+/* Shared reading guide primitives. The layer is transformed with .vmirror. */
+.vroot { isolation: isolate; }
+.vguide.rg-active {
+  display: block;
+  pointer-events: none;
+}
+.vguide .rg-band {
+  position: absolute;
+  z-index: 1;
+  background: #fff;
+  pointer-events: none;
+}
+.vguide .rg-arrow {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+.vguide .rg-arrow-left {
+  left: 0;
+  border-top: calc(var(--rg-arrow-size, 16px) / 2) solid transparent;
+  border-bottom: calc(var(--rg-arrow-size, 16px) / 2) solid transparent;
+  border-left: var(--rg-arrow-size, 16px) solid rgba(255, 176, 32, 1);
+}
+.vguide .rg-arrow-right {
+  right: 0;
+  border-top: calc(var(--rg-arrow-size, 16px) / 2) solid transparent;
+  border-bottom: calc(var(--rg-arrow-size, 16px) / 2) solid transparent;
+  border-right: var(--rg-arrow-size, 16px) solid rgba(255, 176, 32, 1);
+}
+.vguide [aria-hidden="true"] { pointer-events: none; }

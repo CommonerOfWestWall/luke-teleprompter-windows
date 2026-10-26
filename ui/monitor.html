@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>鲁科影视提词器 · 监控</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/viewer.css" />
+  <link rel="stylesheet" href="css/reading-guide.css" />
+</head>
+<body class="monitor dark-scroll">
+  <div class="mon-wrap">
+    <div class="mon-top">
+      <div class="live" id="liveTag"><i></i><span>播放中</span></div>
+      <div class="mon-stat">速度 <b id="mSpeed">60</b></div>
+      <div class="mon-stat">已用 <b id="mElapsed">00:00</b></div>
+      <div class="mon-stat">剩余 <b id="mRemain">--:--</b></div>
+      <div class="spacer"></div>
+      <div class="mon-stat">第 <b id="mSeg">1</b> / <b id="mSegTotal">1</b> 段</div>
+    </div>
+
+    <div class="mon-view" id="monView">
+      <div class="preview-inner" id="monInner">
+        <div class="vroot" id="mvRoot">
+          <div class="vmirror" id="mvMirror">
+            <div class="vstage"><div class="vtrack" id="mvTrack"></div></div>
+            <div class="veil top"></div>
+            <div class="veil bottom"></div>
+            <div class="vguide" id="mvGuide" aria-hidden="true"></div>
+            <div class="info bottom" id="mvInfo"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lbl">监控 · 正像</div>
+    </div>
+
+    <div class="mon-map" id="monMap"></div>
+
+    <div class="mon-keys">
+      <button class="btn k" data-m="restart" title="回到开头">↺</button>
+      <button class="btn k" data-m="back" title="回退半屏">−</button>
+      <button class="btn primary big" id="mPlay">▶ 播放</button>
+      <button class="btn k" data-m="fwd" title="前进半屏">＋</button>
+      <button class="btn k" data-m="slower" title="减速">慢</button>
+      <button class="btn k" data-m="faster" title="加速">快</button>
+      <span class="kvsep"></span>
+      <button class="btn k" data-m="fontDown" title="字号减小（-）">A−</button>
+      <button class="btn k" data-m="fontUp" title="字号增大（=）">A＋</button>
+    </div>
+  </div>
+
+  <div id="toast-host"></div>
+  <script src="js/core.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/reading-guide.js"></script>
+  <script src="js/monitor.js"></script>
+</body>
+</html>
